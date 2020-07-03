@@ -1,0 +1,56 @@
+Start Minikube and create a cluster:
+
+ minikube start
+ 
+Let’s create a Kubernetes Deployment using an existing image named echoserver, which is a simple HTTP server and expose it on port 8080 using --port.
+
+kubectl create deployment tomcat-dockerweb --image=jeffwang/tomcat-dockerweb
+	The output is similar to this:
+	deployment.apps/tomcat-dockerweb created
+	
+	K8S will pull the image from docker hub.
+	
+-To access the hello-minikube Deployment, expose it as a Service:
+
+kubectl expose deployment tomcat-dockerweb --type=NodePort --port=8080
+	The option --type=NodePort specifies the type of the Service.
+
+	The output is similar to this:	
+	service/tomcat-dockerweb exposed
+	
+Check if the Pod is up and running:
+
+kubectl get pod	
+
+
+Get the URL of the exposed Service to view the Service details:
+
+minikube service tomcat-dockerweb --url
+
+
+Get deployment
+kubectl get depoyment
+
+Get service
+kubectl get service
+
+Delete the hello-minikube Service:
+kubectl delete services hello-minikube
+
+Delete the hello-minikube Deployment:
+
+kubectl delete deployment hello-minikube
+
+
+Stop the local Minikube cluster:
+
+minikube stop
+The output is similar to this:
+
+Stopping "minikube"...
+"minikube" stopped.
+For more information, see Stopping a Cluster.
+
+Delete the local Minikube cluster:
+
+minikube delete
