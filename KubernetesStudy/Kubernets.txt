@@ -1,23 +1,56 @@
-Start Minikube and create a cluster:
+快速开始
+这个简短的演示将指导您如何在本地启动、使用和删除 Minikube。请按照以下步骤开始探索 Minikube。
+	1. 启动 Minikube 并创建一个集群：
+minikube start
 
- minikube start
- 
-Let’s create a Kubernetes Deployment using an existing image named echoserver, which is a simple HTTP server and expose it on port 8080 using --port.
+输出类似于：
+Starting local Kubernetes cluster...
+Running pre-create checks...
+Creating machine...
+Starting local Kubernetes cluster...
+
+有关使用特定 Kubernetes 版本、VM 或容器运行时启动集群的详细信息，请参阅启动集群。
+	2. 现在，您可以使用 kubectl 与集群进行交互。有关详细信息，请参阅与集群交互。
+让我们使用名为 echoserver 的镜像创建一个 Kubernetes Deployment，并使用 --port 在端口 8080 上暴露服务。echoserver 是一个简单的 HTTP 服务器。
+kubectl create deployment hello-minikube --image=k8s.gcr.io/echoserver:1.10
+
 
 kubectl create deployment tomcat-dockerweb --image=jeffwang/tomcat-dockerweb
-	The output is similar to this:
-	deployment.apps/tomcat-dockerweb created
+
+deployment.apps/hello-minikube created
+	1. 要访问 hello-minikube Deployment，需要将其作为 Service 公开：
+kubectl expose deployment hello-minikube --type=NodePort --port=8080
 	
-	K8S will pull the image from docker hub.
-	
--To access the hello-minikube Deployment, expose it as a Service:
 
 kubectl expose deployment tomcat-dockerweb --type=NodePort --port=8080
-	The option --type=NodePort specifies the type of the Service.
 
-	The output is similar to this:	
-	service/tomcat-dockerweb exposed
 	
+	2. 选项 --type = NodePort 指定 Service 的类型。
+输出类似于：
+service/hello-minikube exposed
+	service/my-tomcat exposed
+	现在 hello-minikube Pod 已经启动，但是您必须等到 Pod 启动完全才能通过暴露的 Service 访问它。
+检查 Pod 是否启动并运行：
+kubectl get pod
+
+``
+如果输出显示 STATUS 为 ContainerCreating，则表明 Pod 仍在创建中：
+NAME                              READY     STATUS              RESTARTS   AGE
+hello-minikube-3383150820-vctvh   0/1       ContainerCreating   0          3s
+
+``
+如果输出显示 STATUS 为 Running，则 Pod 现在正在运行：
+NAME                              READY     STATUS    RESTARTS   AGE
+hello-minikube-3383150820-vctvh   1/1       Running   0          13s
+
+``
+	3. 获取暴露 Service 的 URL 以查看 Service 的详细信息：
+	
+	
+minikube service tomcat-dockerweb --url
+	
+	
+<<<<<<< HEAD
 Check if the Pod is up and running:
 
 kubectl get pod	
@@ -43,17 +76,64 @@ kubectl delete services tomcat-dockerweb
 Delete the hello-minikube Deployment:
 
 kubectl delete deployment tomcat-dockerweb
+=======
+	minikube service tomcat-dockerweb --url
+	
+	4. 要查看本地集群的详细信息，请在浏览器中复制粘贴并访问上一步骤输出的 URL。
+输出类似于：
+Hostname: hello-minikube-7c77b68cff-8wdzq
 
+Pod Information:
+    -no pod information available-
 
-Stop the local Minikube cluster:
+Server values:
+    server_version=nginx: 1.13.3 - lua: 10008
 
+Request Information:
+    client_address=172.17.0.1
+    method=GET
+    real path=/
+    query=
+    request_version=1.1
+    request_scheme=http
+    request_uri=http://192.168.99.100:8080/
+
+Request Headers:
+    accept=*/*
+    host=192.168.99.100:30674
+    user-agent=curl/7.47.0
+
+Request Body:
+    -no body in request-
+
+如果您不再希望运行 Service 和集群，则可以删除它们。
+	5. 删除 hello-minikube Service：
+kubectl delete services my-tomcat
+
+输出类似于：
+service "hello-minikube" deleted
+	6. 删除 hello-minikube Deployment：
+kubectl delete deployment hello-minikube
+>>>>>>> d306994d69120b41d7d17706968be6892b0f6e92
+
+输出类似于：
+deployment.extensions "hello-minikube" deleted
+	7. 停止本地 Minikube 集群：
 minikube stop
-The output is similar to this:
 
+输出类似于：
 Stopping "minikube"...
 "minikube" stopped.
-For more information, see Stopping a Cluster.
 
-Delete the local Minikube cluster:
-
+有关更多信息，请参阅停止集群。
+	8. 删除本地 Minikube 集群：
 minikube delete
+
+输出类似于：
+Deleting "minikube" ...
+The "minikube" cluster has been deleted.
+
+有关更多信息，请参阅删除集群。
+
+来自 <https://kubernetes.io/zh/docs/setup/learning-environment/minikube/> 
+
