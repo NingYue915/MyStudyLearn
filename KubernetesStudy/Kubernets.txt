@@ -37,9 +37,12 @@ kubectl get service
 Delete the hello-minikube Service:
 kubectl delete services hello-minikube
 
+kubectl delete services tomcat-dockerweb
+
+
 Delete the hello-minikube Deployment:
 
-kubectl delete deployment hello-minikube
+kubectl delete deployment tomcat-dockerweb
 
 
 Stop the local Minikube cluster:
