@@ -1,0 +1,40 @@
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: jeff-dockerweb
+spec:
+  selector:
+    matchLabels:
+      app: jeff-dockerweb
+  replicas: 2 # Update the replicas from 2 to 4
+  template:
+    metadata:
+      labels:
+        app: jeff-dockerweb
+    spec:
+      containers:
+        - name: jeff-dockerweb
+          image: jeffwang/tomcat-dockerweb
+          ports:
+            - containerPort: 8080
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: jeff-nginx
+spec:
+  selector:
+    matchLabels:
+      app: jeff-nginx
+  replicas: 2 # Update the replicas from 2 to 4
+  template:
+    metadata:
+      labels:
+        app: jeff-nginx
+    spec:
+      containers:
+        - name: jeff-nginx
+          image: jeffwang/nginx
+          ports: 
+           - containerPort: 80			

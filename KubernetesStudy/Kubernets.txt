@@ -49,5 +49,17 @@
 	8. Delete Minikube 
     
 	minikube delete
+	
+	9. kubeneter yamel
+	  pod:
+	   kubectl apply -f dockerweb-pod.yaml
+	   
+	   
+	   kubectl delete -f dockerweb-pod.yaml
+	   
+	   kubectl apply -f dockerweb-deployment.yaml --validate=false
+	   
+	kubectl delete -f dockerweb-deployment.yaml 
+	
 
 
