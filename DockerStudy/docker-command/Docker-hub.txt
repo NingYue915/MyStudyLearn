@@ -1,0 +1,39 @@
+2. 要把 Docker Image Push 到 Docker Hub 上，需要把 Docker Image 加上 tag，如下指令
+
+$ docker tag mytomcat jackyohhub/mytomcat
+使用的Docker tag格式如下：
+docker tag ${Image Name} DockerHub帳號/Image Name
+
+3. 輸入 docker login 指令登入到 Docker Hub，畫面如下
+https://ithelp.ithome.com.tw/upload/images/20171209/20103456A1i2Lu8mOC.png
+
+4.使用 docker push 指令把 Docker Image Push 到 Docker Hub 裡，指令如下
+
+$ docker push jackyohhub/mytomcat
+成功之後的畫面如下
+https://ithelp.ithome.com.tw/upload/images/20171209/20103456grz4Tgf1Bo.png
+
+三. 測試是否成功的把 Docker Image Push 到 Docker Hub 上
+**1. 在 Docker Hub 網站裡，登入帳號進去可以看到 Repositories 已經有 jackyohhub/mytomcat 的 Docker Image 如下圖 **
+https://ithelp.ithome.com.tw/upload/images/20171209/201034563uQP7LqpPa.png
+
+2. 使用 docker rm 指令把 local 的 Image 刪除掉，測試從 Docker Hub pull Docker Image 下來，指令如下
+
+$ docker rmi -f jackyohhub/mytomcat
+$ docker rmi -f mytomcat
+畫面如下
+https://ithelp.ithome.com.tw/upload/images/20171209/20103456NK9aIR4baS.png
+
+3. 從 Docker Hub Pull Docker Image 下來，指令如下
+
+$ docker pull jackyohhub/mytomcat
+Pull 完成之後畫面如下
+https://ithelp.ithome.com.tw/upload/images/20171209/20103456oyC3uwCgFz.png
+
+4. 啟動 Docker Container，指令如下
+
+docker run -p 8080:8080 jackyohhub/mytomcat
+5. 啟動完成之後就可以使用 Browser 查看結果，輸入 URL 位址為 http://localhost:8080 可以看到如下畫面
+https://ithelp.ithome.com.tw/upload/images/20171209/20103456XwvF4mFwdM.png
+
+今天已經練習了要如何把 Build 完成的 Docker Image 放到公開網路的空間上了，但是會有不希望分享自已做的 Docker Image 或是有安全性上的需求。如果有以上的需求 Docker Image 就不適合放在公開的網路空間裡，所以明天要介紹如何在自已的內部網路下架設一個 Docker Hub，通常稱為 Docker registry。
