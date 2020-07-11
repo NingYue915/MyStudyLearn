@@ -1,0 +1,22 @@
+1.If you installed Minikube locally, run the following command:
+	minikube start
+
+2.To enable the NGINX Ingress controller, run the following command:
+
+	minikube addons enable ingress
+
+3.Verify that the NGINX Ingress controller is running
+
+	kubectl get pods -n kube-system
+
+3.Create a Deployment using the following command:	
+
+	kubectl create deployment tomcat-dockerweb-ingress --image=jeffwang/tomcat-dockerweb
+
+4.Expose the Deployment:
+
+	kubectl expose deployment  tomcat-dockerweb-ingress  --type=NodePort --port=8080
+
+5.Verify the Service is created and is available on a node port:
+
+	kubectl get service tomcat-dockerweb-ingress
