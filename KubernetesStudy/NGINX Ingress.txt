@@ -20,3 +20,37 @@
 5.Verify the Service is created and is available on a node port:
 
 	kubectl get service tomcat-dockerweb-ingress
+
+6.Visit the service via NodePort:
+
+	minikube service tomcat-dockerweb-ingress --url
+
+7.Create the Ingress resource by running the following command:
+	kubectl apply -f dockerweb-ingress.yaml
+8.Verify the IP address is set:
+
+	kubectl get ingress	
+	output:
+	jeff@Ubuntu20:~/GitHub/MyStudyLearn/KubernetesStudy$ kubectl get ingress
+	NAME                       CLASS    HOSTS                           ADDRESS      PORTS   AGE
+	tomcat-dockerweb-ingress   <none>   tomcat-dockerweb-ingress.info   172.17.0.2   80      31s
+9.Add the following line to the bottom of the /etc/hosts file.
+	172.17.0.2      tomcat-dockerweb-ingress.info
+10.Verify that the Ingress controller is directing traffic:
+
+	curl tomcat-dockerweb-ingress.info
+
+11.Create a v2 Deployment using the following command:
+	kubectl create deployment tomcat-dockerweb-ingress-v2 --image=jeffwang/tomcat-dockerweb
+
+12.Expose the V2 Deployment:
+
+	kubectl expose deployment  tomcat-dockerweb-ingress-v2  --type=NodePort --port=8080
+
+13.Edit the existing example-ingress.yaml and add the following lines:	
+	      - path: /v2
+        backend:
+          serviceName: web2
+          servicePort: 8080
+14.Apply the changes:		  
+	kubectl apply -f dockerweb-ingress.yaml
