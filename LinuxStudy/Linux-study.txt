@@ -1,0 +1,15 @@
+1. Create a desktop file
+   file name is appliation name, like postman.desktop
+2. add content into this file.
+   [Desktop Entry]
+    Encoding=UTF-8
+    Name=Postman
+    Comment=Eclipse
+    Exec=/home/jeff/software/Postman/app/Postman
+    Icon=/home/jeff/software/Postman/app/resources/app/assets/icon.png
+    Terminal=false
+    StartupNotify=true
+    Type=Application
+    Categories=Application;Development;
+~                                                                                                                       
+~                                          
