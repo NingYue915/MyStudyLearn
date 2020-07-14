@@ -1,0 +1,95 @@
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: tomcat-dockerweb-ingress-v1
+spec:
+  selector:
+    matchLabels:
+      app: tomcat-dockerweb-ingress-v1
+  replicas: 1 # Update the replicas from 2 to 4
+  template:
+    metadata:
+      labels:
+        app: tomcat-dockerweb-ingress-v1
+    spec:
+      containers:
+        - name: tomcat-dockerweb-ingress-v1
+          image: jeffwang/tomcat-dockerweb
+          ports:
+            - containerPort: 8080      
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: tomcat-dockerweb-ingress-v2
+spec:
+  selector:
+    matchLabels:
+      app: tomcat-dockerweb-ingress-v2
+  replicas: 1 # Update the replicas from 2 to 4
+  template:
+    metadata:
+      labels:
+        app: tomcat-dockerweb-ingress-v2
+    spec:
+      containers:
+        - name: tomcat-dockerweb-ingress-v2
+          image: jeffwang/tomcat-dockerweb
+          ports:
+            - containerPort: 8080  
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tomcat-dockerweb-ingress-v1
+spec:
+  # This defines which pods are going to be represented by this Service
+  # The service becomes a network endpoint for either other services
+  # or maybe external users to connect to (eg browser)
+  selector:
+    app: tomcat-dockerweb-ingress-v1
+  ports:
+    - name: http
+      port: 8080
+      nodePort: 31000
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tomcat-dockerweb-ingress-v2
+spec:
+  # This defines which pods are going to be represented by this Service
+  # The service becomes a network endpoint for either other services
+  # or maybe external users to connect to (eg browser)
+  selector:
+    app: tomcat-dockerweb-ingress-v2
+  ports:
+    - name: http
+      port: 8080
+      nodePort: 32000
+  type: NodePort
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+   name: tomcat-dockerweb-ingress
+   annotations:
+     #nginx.ingress.kubernetes.io/rewrite-target: /$1
+     nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+   rules:
+   - host: minikube-server
+     http:
+       paths:
+       - path: /v1
+         pathType: Prefix
+         backend:
+           serviceName: tomcat-dockerweb-ingress-v1
+           servicePort: 8080
+       - path: /v2
+         pathType: Prefix
+         backend:
+           serviceName: tomcat-dockerweb-ingress-v2
+           servicePort: 8080      
