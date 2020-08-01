@@ -37,4 +37,4 @@ spec:
         - name: jeff-nginx
           image: jeffwang/nginx
           ports: 
-           - containerPort: 80			
+           - containerPort: 80

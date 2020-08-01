@@ -1,0 +1,101 @@
+第一步是在 Docker 透過 pull <image Name> 指令取得 Redis image 檔
+docker pull redis
+
+並指定執行 container 的名字為 redis-lab、port 號為 6379、指定背景執行
+
+docker run --name redis-lab -p 6379:6379 -d jeffwang/redis
+docker ps
+ONTAINER ID        IMAGE                                 COMMAND                  CREATED             STATUS              PORTS                                                                                                      NAMES
+7b24644fd735        jeffwang/redis                        "docker-entrypoint.s…"   14 seconds ago      Up 12 seconds       0.0.0.0:6379->6379/tcp        
+
+使用 exec <image Name> 對 container 容器下指令，在上面有看到 containerID 為 e819ea3d 下指令時 ID 可以縮寫前兩碼即可
+docker exec -it 7b24644fd735 bash
+
+
+上面有提到要使用 Redis-cli tool 測試，接著輸入下列指令 
+redis-cli
+
+
+系統會回應進入到 127.0.0.1:6379 內，之前有介紹過可以透過 Ping 確認會回傳 PONG 
+Ping
+// PONG
+
+
+測試 GET / SET 
+透過基本的 SET / GET 指令確認服務是否正常，由於之前已經有介紹過這裡就不在多說明，直接上 Code
+127.0.0.1:6379> set test "hello world"
+OK
+127.0.0.1:6379> get test
+"hello world"
+127.0.0.1:6379> 
+
+
+
+
+1. 安装Redis
+通过docker search redis和docker pull redis下载redis镜像
+
+2. 新建挂载配置文件夹
+因为 redis 默认配置你会发现只能够本地连接，不能进行远程访问，使用 Redis Desktop Manager连接都会报错，因此需要手动挂载 redis 配置文件
+
+新建data和conf两个文件夹，位置随意。
+eg:
+
+mkdir -p /root/docker/redis/data
+mkdir -p /root/docker/redis/conf
+1
+2
+3. 增加配置文件 redis.conf
+在刚才新建的redis/conf中新建文件redis.conf，内容如下：
+
+#bind 127.0.0.1 //允许远程连接
+protected-mode no
+appendonly yes //持久化
+requirepass 123456 //密码 
+1
+2
+3
+4
+4. 创建redis容器并启动
+执行命令如下：
+
+docker run --name my_redis -p 6379:6379 -v /home/jeff/GitHub/MyStudyLearn/DockerStudy/redis/data:/data \
+-v /home/jeff/GitHub/MyStudyLearn/DockerStudy/redis/conf/redis.conf:/etc/redis/redis.conf \
+-d jeffwang/redis redis-server /etc/redis/redis.conf
+1
+释义如下：
+
+–name：给容器起一个名
+-p：端口映射 宿主机:容器
+-v：挂载自定义配置 自定义配置:容器内部配置
+-d：后台运行
+redis-server --appendonly yes： 在容器执行redis-server启动命令，并打开redis持久化配置
+5. 启动成功，查看状态
+通过docker ps查看启动状态，是否成功
+
+6. 容器内部连接进行测试
+执行docker exec -it my_redis redis-cli 命令，进入终端。
+通过auth password进行登陆。
+
+完成命令如下：
+
+[root@*** conf]# docker exec -it my_redis redis-cli
+127.0.0.1:6379> set name wangcai
+(error) NOAUTH Authentication required.
+127.0.0.1:6379> auth 123456
+OK
+127.0.0.1:6379> set name wangcai
+OK
+127.0.0.1:6379> get name
+"wangcai"
+1 
+注意如果出现该错误： (error) NOAUTH Authentication required.
+说明没有输入密码进行验证，请输入：auth 你的密码
+
+7. 使用Redis Desktop Manager客户端进行连接
+界面简单，一看就懂，直接上图。
+
+
+8. 小结
+当启动容器端口报错时，可以通过netstat -lntp | grep 6379查看哪个程序在占用
+可以通过sudo kill 6379杀掉占用端口的程序
