@@ -4,6 +4,7 @@
 /home/jeff/GitHub/MyStudyLearn/MyWorkSpace/dockerweb/src/main/java/com/cs/jeff/webapi/HelloService.java
 /home/jeff/GitHub/MyStudyLearn/MyWorkSpace/dockerweb/src/main/java/com/cs/jeff/consts/DockerWebConst.java
 /home/jeff/GitHub/MyStudyLearn/MyWorkSpace/dockerweb/src/main/java/com/cs/jeff/util/LogBackUtil.java
+/home/jeff/GitHub/MyStudyLearn/MyWorkSpace/dockerweb/src/main/java/com/cs/jeff/servlet/WriteLogServlet.java
 /home/jeff/GitHub/MyStudyLearn/MyWorkSpace/dockerweb/src/main/java/com/cs/jeff/service/GetEnvParameterService.java
 /home/jeff/GitHub/MyStudyLearn/MyWorkSpace/dockerweb/src/main/java/com/cs/jeff/servlet/AppInitializeServlet.java
 /home/jeff/GitHub/MyStudyLearn/MyWorkSpace/dockerweb/src/main/java/com/cs/jeff/util/DockerUtil.java
