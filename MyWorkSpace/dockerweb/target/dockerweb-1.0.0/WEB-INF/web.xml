@@ -19,7 +19,11 @@
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
-
+	<servlet>
+		<servlet-name>GetEnvParameter</servlet-name>
+		<servlet-class>com.cs.jeff.servlet.GetEnvParameter</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
 	<servlet-mapping>
 		<servlet-name>HelloWorld</servlet-name>
 		<url-pattern>/hello</url-pattern>
@@ -28,7 +32,10 @@
 		<servlet-name>HelloWorld</servlet-name>
 		<url-pattern>/helloWorld</url-pattern>
 	</servlet-mapping>
-
+	<servlet-mapping>
+		<servlet-name>GetEnvParameter</servlet-name>
+		<url-pattern>/env</url-pattern>
+	</servlet-mapping>
 	<servlet-mapping>
 		<servlet-name>JerseyServletContainer</servlet-name>
 		<url-pattern>/api/*</url-pattern>

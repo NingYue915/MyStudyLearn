@@ -1,4 +1,6 @@
+com/cs/jeff/service/GetEnvParameterService.class
 com/cs/jeff/service/HelloWorldService.class
+com/cs/jeff/servlet/GetEnvParameter.class
 com/cs/jeff/servlet/HelloWorld.class
 com/cs/jeff/util/DockerUtil.class
 com/cs/jeff/webapi/HelloService.class

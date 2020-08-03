@@ -12,4 +12,13 @@ public class DockerUtil {
         return System.getProperty("SYS_ID");
     }
 
+    public static String getEnvVariable(final String name) {
+
+        return System.getenv(name);
+    }
+
+    public static String getSystemPropety(final String name) {
+
+        return System.getProperty(name) ;
+    }
 }
