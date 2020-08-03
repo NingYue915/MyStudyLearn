@@ -19,17 +19,33 @@ data:
   #this is filebeat.yml configration details.
   filebeat.yml: |-
     filebeat.inputs:
-    - type: log
-      enabled: true
-      paths:
-        - "/tmp/cslog-dockerweb/*"
-    processors:
-    - add_cloud_metadata: ~
+      - type: log
+        enabled: true
+        paths:
+          - "/cslog/cslog-dockerweb/*.log"
+    #processors:
+      #- add_cloud_metadata: ~
+      #- add_docker_metadata: ~
+      #- add_kubernetes_metadata: ~
+    filebeat.config.modules:
+      path: ${path.config}/modules.d/*.yml
+      reload.enabled: true
+      reload.period: 5s
+    setup.template.settings:
+      index.number_of_shards: 1
+      index.codec: best_compression      
     output.elasticsearch:
      #index: "eLoan-Service-%{[agent.version]}-%{+yyyy.MM.dd}"
       hosts: ["http://172.17.0.2:31200"]
     setup.kibana:
       host: "http://172.17.0.2:31601"
+    logging.level: debug
+    logging.to_files: true
+    logging.files:
+      path: /cslog/filebeat-log
+      name: filebeat.log
+      keepfiles: 7
+      permissions: 0644
 ---
 # this is elasticserarch deployment,
 # expose two port.9200(http),9300(tcp)
@@ -149,19 +165,21 @@ spec:
             - containerPort: 8080    
           volumeMounts:
             - name : "app-logs"
-              mountPath: /tmp/cslogs/dockerweb/
+              mountPath: /cslogs/dockerweb/
               #mount app log folder out ,name is "app-logs"
               #create a link between "app-logs" and /tmp/cslogs/dockerweb/
               #the dockerweb app will write the logs into this folder.
               #this folder is mount from host(emptyDir{})
+              #THIS IS VERY IMPORTANT TO SET PERMISSION ON THIS LOG FOLDER
+              #OTHER WISE FILEBEAT WILL NOT ABLE TO READ THE LOG FILE.
           env:
             - name:  LOG_PATH
-              value: /tmp/cslogs/dockerweb
+              value: /cslogs/dockerweb
         - image: "docker.elastic.co/beats/filebeat:7.8.1"
           name: jeff-filebeat
           volumeMounts:
           - name: "app-logs"
-            mountPath: /tmp/cslog-dockerweb/
+            mountPath: /cslog/cslog-dockerweb/
             #mount app-logs into /tmp/cslog-dockerweb/
             #the app-logs is come from host(emptyDir: {})
             #the filebeat will monitor this folder in filebeat container.            
@@ -173,6 +191,7 @@ spec:
       volumes:
         - name: app-logs
           emptyDir: {}
+           
           #create a empty dir in host(minikube server)for this pod.
         - name:  filebeat-config
           configMap:
