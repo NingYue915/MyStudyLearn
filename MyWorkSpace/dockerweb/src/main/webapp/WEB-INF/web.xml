@@ -29,6 +29,11 @@
 		<servlet-class>com.cs.jeff.servlet.AppInitializeServlet</servlet-class>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
+	<servlet>
+		<servlet-name>WriteLogServlet</servlet-name>
+		<servlet-class>com.cs.jeff.servlet.WriteLogServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
 	<servlet-mapping>
 		<servlet-name>HelloWorld</servlet-name>
 		<url-pattern>/hello</url-pattern>
@@ -44,5 +49,9 @@
 	<servlet-mapping>
 		<servlet-name>JerseyServletContainer</servlet-name>
 		<url-pattern>/api/*</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>WriteLogServlet</servlet-name>
+		<url-pattern>/log</url-pattern>
 	</servlet-mapping>
 </web-app>
