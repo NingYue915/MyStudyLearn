@@ -1,0 +1,192 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kibana-config
+data:
+  #this is kibana.yml configration details.
+  kibana.yml: |- 
+    server.name: kibana
+    server.host: "0"
+    elasticsearch.hosts: [ "http://172.17.0.2:31200" ]
+    monitoring.ui.container.elasticsearch.enabled: true   
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeat-config
+data:
+  #this is filebeat.yml configration details.
+  filebeat.yml: |-
+    filebeat.inputs:
+    - type: log
+      enabled: true
+      paths:
+        - "/tmp/cslog-dockerweb/*"
+    processors:
+    - add_cloud_metadata: ~
+    output.elasticsearch:
+     #index: "eLoan-Service-%{[agent.version]}-%{+yyyy.MM.dd}"
+      hosts: ["http://172.17.0.2:31200"]
+    setup.kibana:
+      host: "http://172.17.0.2:31601"
+---
+# this is elasticserarch deployment,
+# expose two port.9200(http),9300(tcp)
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: jeff-elasticsearch
+spec:
+  selector:
+    matchLabels:
+      app: jeff-elasticsearch
+  replicas: 1 
+  template:
+    metadata:
+      labels:
+        app: jeff-elasticsearch
+    spec:
+      containers:
+        - name: jeff-elasticsearch
+          image: elasticsearch:7.8.1
+          ports:
+            - containerPort: 9300
+            - containerPort: 9200
+          env:
+            - name: discovery.type
+              value: single-node
+              # signle node ,not cluster.
+---
+# this is elasticserarch service,
+# expose two port.9200(http)->31200,9300(tcp)->31300
+apiVersion: v1
+kind: Service
+metadata:
+  name: jeff-elasticsearch
+spec:
+  selector:
+    app: jeff-elasticsearch
+  ports:
+    - name: http
+      port: 9200
+      nodePort: 31200
+    - name: tcp
+      port: 9300
+      nodePort: 31300      
+  type: NodePort            
+---
+# this is kibana deployment,
+# expose two port.5601(http)
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: jeff-kibana
+spec:
+  selector:
+    matchLabels:
+      app: jeff-kibana
+  replicas: 1 
+  template:
+    metadata:
+      labels:
+        app: jeff-kibana
+    spec:
+      containers:
+        - name: jeff-kibana
+          image: kibana:7.8.1
+          ports:
+            - containerPort: 5601
+          volumeMounts:
+            - name:  kibana-config
+              mountPath:  /usr/share/kibana/config/kibana.yml
+              subPath: kibana.yml
+              # will use kibana.yml(from configMap) to replace the one in mountPath
+      volumes:
+        - name:  kibana-config
+          configMap:
+            name: kibana-config
+            # use kibna.yml(line 8) content to create file of kibana.yml
+            # put it in mountPath(/usr/share/kibana/config/kibana.yml)
+---
+# this is kibana service,
+# expose two port.5601(http)->31601
+apiVersion: v1
+kind: Service
+metadata:
+  name: jeff-kibana
+spec:
+  selector:
+    app: jeff-kibana
+  ports:
+    - name: http
+      port: 5601
+      nodePort: 31601
+  type: NodePort       
+
+---
+# this is dockerweb deployment
+# expose two port.8080(http)->31808
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: jeff-dockerweb
+spec:
+  selector:
+    matchLabels:
+      app: jeff-dockerweb
+  replicas: 1 
+  template:
+    metadata:
+      labels:
+        app: jeff-dockerweb
+    spec:
+      hostNetwork: false
+      containers:
+        - name: jeff-dockerweb
+          image: jeffwang/tomcat-dockerweb
+          ports:
+            - containerPort: 8080    
+          volumeMounts:
+            - name : "app-logs"
+              mountPath: /tmp/cslogs/dockerweb/
+              #mount app log folder out ,name is "app-logs"
+              #create a link between "app-logs" and /tmp/cslogs/dockerweb/
+              #the dockerweb app will write the logs into this folder.
+              #this folder is mount from host(emptyDir{})
+        - image: "docker.elastic.co/beats/filebeat:7.8.1"
+          name: filebeat
+          volumeMounts:
+          - name: "app-logs"
+            mountPath: /tmp/cslog-dockerweb/
+            #mount app-logs into /tmp/cslog-dockerweb/
+            #the app-logs is come from host(emptyDir: {})
+            #the filebeat will monitor this folder in filebeat container.            
+          - name: filebeat-config
+            mountPath: "/usr/share/filebeat/filebeat.yml"            
+            subPath: filebeat.yml       
+            #get the conent from  filebeat.yml under configMap(filebeat-config)
+            #create a file of filebeat.yml and write it into '/usr/share/filebeat/filebeat.yml'
+      volumes:
+        - name: app-logs
+          emptyDir: {}
+          #create a empty dir in host(minikube server)for this pod.
+        - name:  filebeat-config
+          configMap:
+            name:  filebeat-config  
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jeff-dockerweb-webapp
+spec:
+  selector:
+    app: jeff-dockerweb
+  ports:
+    - name: http
+      port: 8080
+      nodePort: 30080
+  type: NodePort
+---
+            
+

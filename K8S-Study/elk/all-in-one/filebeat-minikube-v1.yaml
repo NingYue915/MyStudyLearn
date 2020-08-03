@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeat-config
+data:
+  filebeat.yml: |-
+    filebeat.inputs:
+    - type: log
+      enabled: true
+      paths:
+        - "/tmp/cslog/*"
+    processors:
+    - add_cloud_metadata: ~
+    output.elasticsearch:
+     #index: "eLoan-Service-%{[agent.version]}-%{+yyyy.MM.dd}"
+      hosts: ["http://172.17.0.2:31200"]
+    setup.kibana:
+      host: "http://172.17.0.2:31601"
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: jeff-dockerweb
+spec:
+  selector:
+    matchLabels:
+      app: jeff-dockerweb
+  replicas: 1 # Update the replicas from 2 to 4
+  template:
+    metadata:
+      labels:
+        app: jeff-dockerweb
+    spec:
+      hostNetwork: false
+      volumes:
+        - name: app-logs
+          emptyDir: {}
+        - name:  filebeat-config
+          configMap:
+            name:  filebeat-config            
+      containers:
+        - name: jeff-dockerweb
+          image: jeffwang/tomcat-dockerweb
+          ports:
+            - containerPort: 8080    
+          volumeMounts:
+            - name : "app-logs"
+              mountPath: /usr/local/tomcat/logs
+        - image: "docker.elastic.co/beats/filebeat:7.8.1"
+          name: filebeat
+          volumeMounts:
+          - name: "app-logs"
+            mountPath: /tmp/cslog/
+            
+          - name: filebeat-config
+            mountPath: "/usr/share/filebeat/filebeat.yml"            
+            subPath: filebeat.yml              
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jeff-dockerweb-webapp
+spec:
+  selector:
+    app: jeff-dockerweb
+  ports:
+    - name: http
+      port: 8080
+      nodePort: 30080
+  type: NodePort
+---
+            
