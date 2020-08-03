@@ -1,0 +1,46 @@
+https://computingforgeeks.com/how-to-install-minikube-on-ubuntu-debian-linux/
+
+How To Install Minikube on Ubuntu 20.04/18.04 & Debian 10 Linux
+
+
+Step 3: Download minikube
+You need to download the minikube binary. I will put the binary under /usr/local/bin directory since it is inside $PATH.
+
+wget https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+chmod +x minikube-linux-amd64
+sudo mv minikube-linux-amd64 /usr/local/bin/minikube
+
+
+Confirm version installed
+
+$ minikube version
+minikube version: v1.9.2
+commit: 93af9c1e43cab9618e301bc9fa720c63d5efa393
+Step 4: Install kubectl on Ubuntu / Debian
+We need kubectl which is a command line tool used to deploy and manage applications on Kubernetes:
+
+curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+Make the kubectl binary executable.
+
+
+chmod +x ./kubectl
+Move the binary in to your PATH:
+
+sudo mv ./kubectl /usr/local/bin/kubectl
+Check version:
+
+
+# kubectl version -o json 
+{
+  "clientVersion": {
+    "major": "1",
+    "minor": "10",
+    "gitVersion": "v1.10.4",
+    "gitCommit": "5ca598b4ba5abb89bb773071ce452e33fb66339d",
+    "gitTreeState": "clean",
+    "buildDate": "2018-06-06T08:13:03Z",
+    "goVersion": "go1.9.3",
+    "compiler": "gc",
+    "platform": "linux/amd64"
+  }
+}

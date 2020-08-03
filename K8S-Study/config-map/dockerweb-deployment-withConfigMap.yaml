@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: special-config
+data:
+  master.name: 'Jeff Wang'
+  master.age: '30'
+  SPECIAL_LEVEL: verygood
+  SPECIAL_TYPE: charmwang
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: jeff-dockerweb
+spec:
+  selector:
+    matchLabels:
+      app: jeff-dockerweb
+  replicas: 1 # Update the replicas from 2 to 4
+  template:
+    metadata:
+      labels:
+        app: jeff-dockerweb
+    spec:
+      containers:
+        - name: jeff-dockerweb
+          image: jeffwang/tomcat-dockerweb
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+          - name:  tomcat-logs
+            mountPath:  /usr/local/tomcat/logs
+          - name:  tomcat-temp
+            mountPath:  /usr/local/tomcat/temp            
+          env:
+            - name: SPECIAL_MASTER_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: special-config
+                  key: master.name
+            - name: SPECIAL_MASTER_AGE
+              valueFrom:
+                configMapKeyRef:
+                  name: special-config
+                  key: master.age   
+      volumes:
+        - name:  tomcat-logs
+          configMap:
+            name: special-config
+        - name:  tomcat-temp
+          configMap:
+            name: special-config   
+            items: 
+            - key: SPECIAL_LEVEL
+              path: keys         
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: jeff-nginx
+spec:
+  selector:
+    matchLabels:
+      app: jeff-nginx
+  replicas: 1 # Update the replicas from 2 to 4
+  template:
+    metadata:
+      labels:
+        app: jeff-nginx
+    spec:
+      containers:
+        - name: jeff-nginx
+          image: jeffwang/nginx
+          ports: 
+           - containerPort: 80

@@ -1,0 +1,17 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tomcat-dockerweb
+  labels:
+    app: dockerweb
+spec:
+  containers:
+    - name: tomcat-dockerweb
+      image: jeffwang/tomcat-dockerweb
+      ports:
+        - containerPort: 8080
+    - name: jeffwang-nginx
+      image: jeffwang/nginx
+      ports:
+        - containerPort: 80

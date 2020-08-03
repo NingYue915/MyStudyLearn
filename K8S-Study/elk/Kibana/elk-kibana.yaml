@@ -1,0 +1,40 @@
+#docker run --link YOUR_ELASTICSEARCH_CONTAINER_NAME_OR_ID:elasticsearch -p 5601:5601 {docker-repo}:{version}
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: jeff-kibana
+spec:
+  selector:
+    matchLabels:
+      app: jeff-kibana
+  replicas: 1 # Update the replicas from 2 to 4
+  template:
+    metadata:
+      labels:
+        app: jeff-kibana
+    spec:
+      containers:
+        - name: jeff-kibana
+          image: kibana:7.8.1
+          ports:
+            - containerPort: 5601
+          env:
+            - name: test
+              value: testv
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jeff-kibana
+spec:
+  # This defines which pods are going to be represented by this Service
+  # The service becomes a network endpoint for either other services
+  # or maybe external users to connect to (eg browser)
+  selector:
+    app: jeff-kibana
+  ports:
+    - name: http
+      port: 5601
+      nodePort: 31601
+  type: NodePort            

@@ -24,6 +24,11 @@
 		<servlet-class>com.cs.jeff.servlet.GetEnvParameter</servlet-class>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
+	<servlet>
+		<servlet-name>AppInitializeServlet</servlet-name>
+		<servlet-class>com.cs.jeff.servlet.AppInitializeServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
 	<servlet-mapping>
 		<servlet-name>HelloWorld</servlet-name>
 		<url-pattern>/hello</url-pattern>

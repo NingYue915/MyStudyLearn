@@ -1,0 +1,65 @@
+	1. Minikube Start
+       minikube start
+        ---Output like this.
+		Starting local Kubernetes cluster...
+		Running pre-create checks...
+		Creating machine...
+		Starting local Kubernetes cluster...
+		
+    2. Create deployment
+
+         kubectl create deployment tomcat-dockerweb --image=jeffwang/tomcat-dockerweb
+
+		--output like 
+			deployment.apps/tomcat-dockerweb created
+			
+	3. Expose tomcat-dockerweb Deployment Service 
+		
+		kubectl expose deployment  tomcat-dockerweb  --type=NodePort --port=8080
+	
+		output like this
+		
+		kubectl expose deployment tomcat-dockerweb --type=NodePort --port=8080
+ 
+	.  --type = NodePort  Service
+
+		service/tomcat-dockerweb exposed
+		
+    4  Kubernetes get pod,service,deployment information
+	  --  kubectl get pod
+	  --  kubectl get depoyment
+	  -- kubectl get service
+	  
+	5. Get  Service  Access URL 
+	
+	minikube service tomcat-dockerweb --url
+	
+	6. Delete the Minikube Service:
+	
+     kubectl delete services tomcat-dockerweb
+
+    7.Delete the Minikube Deployment:
+
+     kubectl delete deployment tomcat-dockerweb
+	 
+	 8.Stop Minikube
+	 
+	 minikube stop
+
+	8. Delete Minikube 
+    
+	minikube delete
+	
+	9. kubeneter yamel
+	  pod:
+	   kubectl apply -f dockerweb-pod.yaml
+	   
+	   
+	   kubectl delete -f dockerweb-pod.yaml
+	   
+	   kubectl apply -f dockerweb-deployment.yaml --validate=false
+	   
+	kubectl delete -f dockerweb-deployment.yaml 
+	
+
+

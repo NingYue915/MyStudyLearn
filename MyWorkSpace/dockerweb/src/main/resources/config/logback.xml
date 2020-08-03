@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<appender name="DOCKERWEB-SYSTEM" class="ch.qos.logback.core.FileAppender">
+		<file>{LOG_PATH}/dockerweb_system.log</file>
+		<encoder>
+			<pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n
+			</pattern>
+		</encoder>
+	</appender>
+	<logger name="dockerweb.logger">
+		<appender-ref ref="DOCKERWEB-SYSTEM" />
+	</logger>
+</configuration>

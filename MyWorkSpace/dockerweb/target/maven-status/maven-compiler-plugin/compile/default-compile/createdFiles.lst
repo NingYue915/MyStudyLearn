@@ -1,6 +1,9 @@
 com/cs/jeff/service/GetEnvParameterService.class
 com/cs/jeff/service/HelloWorldService.class
+com/cs/jeff/util/LogBackUtil.class
+com/cs/jeff/consts/DockerWebConst.class
+com/cs/jeff/servlet/AppInitializeServlet.class
+com/cs/jeff/webapi/HelloService.class
 com/cs/jeff/servlet/GetEnvParameter.class
 com/cs/jeff/servlet/HelloWorld.class
 com/cs/jeff/util/DockerUtil.class
-com/cs/jeff/webapi/HelloService.class

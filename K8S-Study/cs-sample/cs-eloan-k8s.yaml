@@ -1,0 +1,128 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeat-config
+  namespace: eloan
+data:
+  filebeat.yml: |-
+    filebeat.inputs:
+    - type: log
+      enabled: true
+      paths:
+        - "/log/*"
+    processors:
+    - add_cloud_metadata: ~
+    output.elasticsearch:
+     #index: "eLoan-Service-%{[agent.version]}-%{+yyyy.MM.dd}"
+      hosts: ["elasticsearch.elk:9200"]
+    setup.kibana:
+      host: "kibana.elk:5601"             
+#    setup.template:
+#      name: "stddata_template"
+#      pattern: "eLoan-Service-*"
+#      enabled: false
+#      fields: ""
+#    setup.dashboards.index: "eLoan-Service-*"    
+    
+            
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: ms-eloan-service
+  namespace: eloan
+  labels:
+    k8s-app: ms-eloan-service
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        k8s-app: ms-eloan-service
+        name: ms-eloan-service
+    spec:
+      hostNetwork: false
+      volumes:
+        - name:  base-config
+          configMap:
+            name:  base-config
+            
+        - name: app-logs
+          emptyDir: {}
+          
+        - name:  filebeat-config
+          configMap:
+            name:  filebeat-config            
+
+                    
+      containers:
+        - image: "elastic/filebeat:7.2.0"
+          name: filebeat
+          volumeMounts:
+          - name: "app-logs"
+            mountPath: /log
+            
+          - name: filebeat-config
+            mountPath: "/usr/share/filebeat/filebeat.yml"            
+            subPath: filebeat.yml
+   
+        - image: "066958744957.dkr.ecr.us-east-2.amazonaws.com/ms-eloan-service:latest"
+          imagePullPolicy: Always
+          name: ms-eloan-service
+          volumeMounts:
+            - mountPath: "/opt/jboss/wildfly/standalone/configuration/standalone.xml"
+              name: "base-config"
+              subPath: 'wildfly-standalone.xml'  
+            
+            - mountPath: /CSMS_APP_LOGS
+              name: "app-logs"
+                          
+          ports:
+            - containerPort: 8080
+            - containerPort: 9990
+          env:
+            - name: "CONF_SERVER_URL"
+              value: "http://ms-config-service.config:8080/CloudConfigService"            
+            - name: "CONF_CLIENT_ID"
+              value: "AWS-eLoanApp"
+            - name: "CONF_ACCESS_KEY"
+              value: "223dff90-f8bc-4e81-93c4-231312"
+            - name: "CONF_CHECK_INTERVAL"
+              value: "5"
+            - name: CONF_BRANCH
+              value: "master"                
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-eloan-service
+  namespace: eloan
+spec:
+  type: ClusterIP
+  clusterIP: 10.100.88.1
+  selector:
+    k8s-app: ms-eloan-service
+  ports:
+  - port: 8080 
+    targetPort: 8080
+    name: p8080
+  - port: 9990 
+    name: p9990
+    targetPort: 9990
+---
+ # Ingress 文件如下
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ms-eloan-service
+  namespace: eloan
+spec:
+  rules:
+  - host: eloan-ws.cloud-chinasystems.com
+    http:
+      paths:
+        - backend:
+            serviceName: ms-eloan-service
+            servicePort: 8080
+            
