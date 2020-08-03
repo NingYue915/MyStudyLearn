@@ -130,16 +130,16 @@ spec:
 apiVersion: apps/v1 
 kind: Deployment
 metadata:
-  name: jeff-dockerweb
+  name: jeff-dockerweb-filebeat
 spec:
   selector:
     matchLabels:
-      app: jeff-dockerweb
+      app: jeff-dockerweb-filebeat
   replicas: 1 
   template:
     metadata:
       labels:
-        app: jeff-dockerweb
+        app: jeff-dockerweb-filebeat
     spec:
       hostNetwork: false
       containers:
@@ -154,8 +154,11 @@ spec:
               #create a link between "app-logs" and /tmp/cslogs/dockerweb/
               #the dockerweb app will write the logs into this folder.
               #this folder is mount from host(emptyDir{})
+          env:
+            - name:  LOG_PATH
+              value: /tmp/cslogs/dockerweb
         - image: "docker.elastic.co/beats/filebeat:7.8.1"
-          name: filebeat
+          name: jeff-filebeat
           volumeMounts:
           - name: "app-logs"
             mountPath: /tmp/cslog-dockerweb/
@@ -181,11 +184,11 @@ metadata:
   name: jeff-dockerweb-webapp
 spec:
   selector:
-    app: jeff-dockerweb
+    app: jeff-dockerweb-filebeat
   ports:
     - name: http
       port: 8080
-      nodePort: 30080
+      nodePort: 31808
   type: NodePort
 ---
             
