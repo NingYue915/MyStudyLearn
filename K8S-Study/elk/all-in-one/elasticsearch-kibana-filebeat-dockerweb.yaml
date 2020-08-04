@@ -42,7 +42,7 @@ data:
     logging.level: debug
     logging.to_files: true
     logging.files:
-      path: /cslog/filebeat-log
+      path: /cslog
       name: filebeat.log
       keepfiles: 7
       permissions: 0644
