@@ -6,6 +6,7 @@ RUN chmod -R 777 /usr/local/tomcat/
 USER tomcat
 RUN mkdir -p /tmp/cslogs/dockerweb
 RUN chmod 777 -R /tmp/cslogs/dockerweb/
+RUN umask 000
 WORKDIR /usr/local/tomcat/bin
 CMD ["catalina.sh", "run"]
 

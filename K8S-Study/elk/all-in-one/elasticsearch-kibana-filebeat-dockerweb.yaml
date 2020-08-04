@@ -158,13 +158,20 @@ spec:
         app: jeff-dockerweb-filebeat
     spec:
       hostNetwork: false
+      volumes:
+        - name: app-logs
+          emptyDir: {}
+           
+          #create a empty dir in host(minikube server)for this pod.
+        - name:  filebeat-config
+          configMap:
+            name:  filebeat-config        
       containers:
         - image: "docker.elastic.co/beats/filebeat:7.8.1"
           name: jeff-filebeat
           volumeMounts:
           - name: "app-logs"
             mountPath: /tmp/cslogs/dockerweb
-            readOnly: false
             #mount app-logs into /tmp/cslog-dockerweb/
             #the app-logs is come from host(emptyDir: {})
             #the filebeat will monitor this folder in filebeat container.            
@@ -173,6 +180,7 @@ spec:
             subPath: filebeat.yml       
             #get the conent from  filebeat.yml under configMap(filebeat-config)
             #create a file of filebeat.yml and write it into '/usr/share/filebeat/filebeat.yml' 
+          #command: [ "chmod", "-R", "777","/cslogs/dockerweb/" ]
         - name: jeff-dockerweb
           image: jeffwang/tomcat-dockerweb
           ports:
@@ -180,6 +188,8 @@ spec:
           volumeMounts:
             - name : "app-logs"
               mountPath: /tmp/cslogs/dockerweb
+            - name : "app-logs"
+              mountPath: /usr/share/filebeat/logs/cslogs/dockerweb                          
               #mount app log folder out ,name is "app-logs"
               #create a link between "app-logs" and /tmp/cslogs/dockerweb/
               #the dockerweb app will write the logs into this folder.
@@ -190,14 +200,7 @@ spec:
             - name:  LOG_PATH
               value: /tmp/cslogs/dockerweb
           #command: [ "chmod", "-R", "777","/cslogs/dockerweb/" ]
-      volumes:
-        - name: app-logs
-          emptyDir: {}
-           
-          #create a empty dir in host(minikube server)for this pod.
-        - name:  filebeat-config
-          configMap:
-            name:  filebeat-config  
+
 ---
 apiVersion: v1
 kind: Service
