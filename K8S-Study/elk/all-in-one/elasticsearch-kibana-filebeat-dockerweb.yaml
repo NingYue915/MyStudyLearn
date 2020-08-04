@@ -180,6 +180,7 @@ spec:
           volumeMounts:
           - name: "app-logs"
             mountPath: /cslog/cslog-dockerweb/
+            readOnly: false
             #mount app-logs into /tmp/cslog-dockerweb/
             #the app-logs is come from host(emptyDir: {})
             #the filebeat will monitor this folder in filebeat container.            
