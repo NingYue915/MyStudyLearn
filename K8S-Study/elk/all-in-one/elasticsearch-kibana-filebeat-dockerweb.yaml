@@ -42,7 +42,7 @@ data:
     logging.level: debug
     logging.to_files: true
     logging.files:
-      path: /cslog
+      path: /usr/share/filebeat/logs
       name: filebeat.log
       keepfiles: 7
       permissions: 0644
@@ -175,6 +175,7 @@ spec:
           env:
             - name:  LOG_PATH
               value: /cslogs/dockerweb
+          command: [ "chmod", "-R", "777","/cslogs/dockerweb/" ]
         - image: "docker.elastic.co/beats/filebeat:7.8.1"
           name: jeff-filebeat
           volumeMounts:
@@ -188,7 +189,7 @@ spec:
             mountPath: "/usr/share/filebeat/filebeat.yml"            
             subPath: filebeat.yml       
             #get the conent from  filebeat.yml under configMap(filebeat-config)
-            #create a file of filebeat.yml and write it into '/usr/share/filebeat/filebeat.yml'
+            #create a file of filebeat.yml and write it into '/usr/share/filebeat/filebeat.yml' 
       volumes:
         - name: app-logs
           emptyDir: {}
