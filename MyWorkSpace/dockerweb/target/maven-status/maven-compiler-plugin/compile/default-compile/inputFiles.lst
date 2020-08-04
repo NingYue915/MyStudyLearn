@@ -8,3 +8,4 @@
 /home/jeff/GitHub/MyStudyLearn/MyWorkSpace/dockerweb/src/main/java/com/cs/jeff/service/GetEnvParameterService.java
 /home/jeff/GitHub/MyStudyLearn/MyWorkSpace/dockerweb/src/main/java/com/cs/jeff/servlet/AppInitializeServlet.java
 /home/jeff/GitHub/MyStudyLearn/MyWorkSpace/dockerweb/src/main/java/com/cs/jeff/util/DockerUtil.java
+/home/jeff/GitHub/MyStudyLearn/MyWorkSpace/dockerweb/src/main/java/com/cs/jeff/servlet/WriteFileServlet.java

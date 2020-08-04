@@ -22,7 +22,7 @@ data:
       - type: log
         enabled: true
         paths:
-          - "/cslog/cslog-dockerweb/*.log"
+          - "/tmp/cslogs/dockerweb/*.log"
     #processors:
       #- add_cloud_metadata: ~
       #- add_docker_metadata: ~
@@ -159,28 +159,11 @@ spec:
     spec:
       hostNetwork: false
       containers:
-        - name: jeff-dockerweb
-          image: jeffwang/tomcat-dockerweb
-          ports:
-            - containerPort: 8080    
-          volumeMounts:
-            - name : "app-logs"
-              mountPath: /cslogs/dockerweb/
-              #mount app log folder out ,name is "app-logs"
-              #create a link between "app-logs" and /tmp/cslogs/dockerweb/
-              #the dockerweb app will write the logs into this folder.
-              #this folder is mount from host(emptyDir{})
-              #THIS IS VERY IMPORTANT TO SET PERMISSION ON THIS LOG FOLDER
-              #OTHER WISE FILEBEAT WILL NOT ABLE TO READ THE LOG FILE.
-          env:
-            - name:  LOG_PATH
-              value: /cslogs/dockerweb
-          command: [ "chmod", "-R", "777","/cslogs/dockerweb/" ]
         - image: "docker.elastic.co/beats/filebeat:7.8.1"
           name: jeff-filebeat
           volumeMounts:
           - name: "app-logs"
-            mountPath: /cslog/cslog-dockerweb/
+            mountPath: /tmp/cslogs/dockerweb
             readOnly: false
             #mount app-logs into /tmp/cslog-dockerweb/
             #the app-logs is come from host(emptyDir: {})
@@ -190,6 +173,23 @@ spec:
             subPath: filebeat.yml       
             #get the conent from  filebeat.yml under configMap(filebeat-config)
             #create a file of filebeat.yml and write it into '/usr/share/filebeat/filebeat.yml' 
+        - name: jeff-dockerweb
+          image: jeffwang/tomcat-dockerweb
+          ports:
+            - containerPort: 8080    
+          volumeMounts:
+            - name : "app-logs"
+              mountPath: /tmp/cslogs/dockerweb
+              #mount app log folder out ,name is "app-logs"
+              #create a link between "app-logs" and /tmp/cslogs/dockerweb/
+              #the dockerweb app will write the logs into this folder.
+              #this folder is mount from host(emptyDir{})
+              #THIS IS VERY IMPORTANT TO SET PERMISSION ON THIS LOG FOLDER
+              #OTHER WISE FILEBEAT WILL NOT ABLE TO READ THE LOG FILE.
+          env:
+            - name:  LOG_PATH
+              value: /tmp/cslogs/dockerweb
+          #command: [ "chmod", "-R", "777","/cslogs/dockerweb/" ]
       volumes:
         - name: app-logs
           emptyDir: {}
