@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Servlet implementation class HelloWorld
  */
@@ -27,9 +29,19 @@ public class WriteFileServlet extends HttpServlet {
             String logPath = request.getParameter("log.path");
             String logFile = request.getParameter("log.file");
             String logValue = request.getParameter("log.value");
+            logValue = StringUtils.isEmpty(logValue)?"":logValue;
+            logValue = logValue+"\r\n";
             File file = new File(logPath+File.separator+logFile);
+            File path = new File(logPath);
+            if(!path.exists()) {
+                path.mkdirs();
+            }
             try(FileOutputStream os =new FileOutputStream(file)){
                 os.write(logValue.getBytes());
+                os.flush();
+                os.close();
+            }catch (Exception e) {
+                response.getWriter().append(e.toString()).append(request.getContextPath());
             }
         }catch (Exception e) {
             response.getWriter().append(e.toString()).append(request.getContextPath());
