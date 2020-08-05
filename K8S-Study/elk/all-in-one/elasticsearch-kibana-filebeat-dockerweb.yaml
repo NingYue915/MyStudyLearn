@@ -182,7 +182,7 @@ spec:
             #create a file of filebeat.yml and write it into '/usr/share/filebeat/filebeat.yml' 
           #command: [ "chmod", "-R", "777","/cslogs/dockerweb/" ]
         - name: jeff-dockerweb
-          image: jeffwang/tomcat-dockerweb:latest
+          image: jeffwang/tomcat-dockerweb:1.0
           ports:
             - containerPort: 8080    
           volumeMounts:

@@ -25,27 +25,25 @@ public class WriteFileServlet extends HttpServlet {
     }
 
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
-        try {
-            String logPath = request.getParameter("log.path");
-            String logFile = request.getParameter("log.file");
-            String logValue = request.getParameter("log.value");
-            logValue = StringUtils.isEmpty(logValue)?"":logValue;
-            logValue = logValue+"\r\n";
-            File file = new File(logPath+File.separator+logFile);
-            File path = new File(logPath);
-            if(!path.exists()) {
-                path.mkdirs();
-            }
-            try(FileOutputStream os =new FileOutputStream(file,true)){
-                os.write(logValue.getBytes());
-                os.flush();
-                os.close();
-            }catch (Exception e) {
-                response.getWriter().append(e.toString()).append(request.getContextPath());
-            }
-        }catch (Exception e) {
-            response.getWriter().append(e.toString()).append(request.getContextPath());
+
+        String logPath = request.getParameter("log.path");
+        String logFile = request.getParameter("log.file");
+        String logValue = request.getParameter("log.value");
+        logValue = StringUtils.isEmpty(logValue) ? "" : logValue;
+        logValue = logValue + "\r\n";
+        File file = new File(logPath + File.separator + logFile);
+        File path = new File(logPath);
+        if (!path.exists()) {
+            path.mkdirs();
         }
+        try (FileOutputStream os = new FileOutputStream(file, true)) {
+            os.write(logValue.getBytes());
+            os.flush();
+            os.close();
+        } catch (Exception e) {
+            response.getWriter().append("Write File Not OK\r\n" + e.toString()).append(request.getContextPath());
+        }
+
         response.getWriter().append("Write File OK!").append(request.getContextPath());
 
     }
