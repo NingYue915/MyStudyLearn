@@ -22,7 +22,7 @@ data:
       - type: log
         enabled: true
         paths:
-          - "/tmp/cslogs/dockerweb/*.log"
+          - "/cslogs/*.log"
     #processors:
       #- add_cloud_metadata: ~
       #- add_docker_metadata: ~
@@ -171,7 +171,7 @@ spec:
           name: jeff-filebeat
           volumeMounts:
           - name: "app-logs"
-            mountPath: /tmp/cslogs/dockerweb
+            mountPath: /cslogs
             #mount app-logs into /tmp/cslog-dockerweb/
             #the app-logs is come from host(emptyDir: {})
             #the filebeat will monitor this folder in filebeat container.            
@@ -187,7 +187,7 @@ spec:
             - containerPort: 8080    
           volumeMounts:
             - name : "app-logs"
-              mountPath: /tmp/cslogs/dockerweb
+              mountPath: /cslogs
             - name : "app-logs"
               mountPath: /usr/share/filebeat/logs/cslogs/dockerweb                          
               #mount app log folder out ,name is "app-logs"
@@ -198,7 +198,7 @@ spec:
               #OTHER WISE FILEBEAT WILL NOT ABLE TO READ THE LOG FILE.
           env:
             - name:  LOG_PATH
-              value: /tmp/cslogs/dockerweb
+              value: /cslogs
             - name: UMASK
               value: "0000"
           #command: [ "chmod", "-R", "777","/cslogs/dockerweb/" ]
