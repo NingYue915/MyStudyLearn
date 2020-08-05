@@ -36,7 +36,7 @@ public class WriteFileServlet extends HttpServlet {
             if(!path.exists()) {
                 path.mkdirs();
             }
-            try(FileOutputStream os =new FileOutputStream(file)){
+            try(FileOutputStream os =new FileOutputStream(file,true)){
                 os.write(logValue.getBytes());
                 os.flush();
                 os.close();

@@ -200,7 +200,7 @@ spec:
             - name:  LOG_PATH
               value: /tmp/cslogs/dockerweb
             - name: UMASK
-              value: "000"
+              value: "0000"
           #command: [ "chmod", "-R", "777","/cslogs/dockerweb/" ]
 
 ---
