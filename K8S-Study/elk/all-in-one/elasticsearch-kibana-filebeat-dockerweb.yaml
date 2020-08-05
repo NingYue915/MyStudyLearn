@@ -182,7 +182,7 @@ spec:
             #create a file of filebeat.yml and write it into '/usr/share/filebeat/filebeat.yml' 
           #command: [ "chmod", "-R", "777","/cslogs/dockerweb/" ]
         - name: jeff-dockerweb
-          image: jeffwang/tomcat-dockerweb
+          image: jeffwang/tomcat-dockerweb:latest
           ports:
             - containerPort: 8080    
           volumeMounts:
@@ -199,6 +199,8 @@ spec:
           env:
             - name:  LOG_PATH
               value: /tmp/cslogs/dockerweb
+            - name: UMASK
+              value: "000"
           #command: [ "chmod", "-R", "777","/cslogs/dockerweb/" ]
 
 ---

@@ -1,0 +1,13 @@
+FROM jeffwang/tomcat
+MAINTAINER "Jeff Wang<jeff.wang@chinasystems.com>"
+RUN groupadd -r tomcat && useradd -r -m -g tomcat tomcat
+ADD profile /etc/
+ADD dockerweb.war /usr/local/tomcat/webapps/
+ADD my-catalina.sh /usr/local/tomcat/bin/
+RUN chmod -R 777 /usr/local/tomcat/ && chmod -R 777 /usr/local/tomcat/bin
+USER tomcat
+RUN mkdir -p /tmp/cslogs/dockerweb && chmod 777 -R /tmp/cslogs/dockerweb/
+WORKDIR /usr/local/tomcat/bin
+CMD ["my-catalina.sh", "run"]
+
+
