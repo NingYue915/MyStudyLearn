@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: metricbeat-config
+data:
+  metricbeat.yml: |-
+    metricbeat.config.modules:
+      # Mounted `metricbeat-daemonset-modules` configmap:
+      path: ${path.config}/modules.d/*.yml
+      # Reload module configs as they change:
+      reload.enabled: false
+
+    # To enable hints based autodiscover uncomment this:
+    #metricbeat.autodiscover:
+    #  providers:
+    #    - type: kubernetes
+    #      node: ${NODE_NAME}
+    #      hints.enabled: true
+
+    processors:
+      - add_cloud_metadata:
+
+    output.elasticsearch:
+      hosts: ["http://172.17.0.2:31200"]
+    setup.kibana:
+      host: "http://172.17.0.2:31601"
+---
+# this is metricbeat deployment
+# expose two port.8080(http)->31808
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: jeff-metricbeat
+spec:
+  selector:
+    matchLabels:
+      app: jeff-metricbeat
+  replicas: 1 
+  template:
+    metadata:
+      labels:
+        app: jeff-metricbeat
+    spec:
+      hostNetwork: false
+      volumes:
+        - name:  metricbeat-config
+          configMap:
+            name:  metricbeat-config        
+      containers:
+        - image: "store/elastic/metricbeat:7.8.1"
+          name: jeff-metricbeat
+          volumeMounts:
+          - name: metricbeat-config
+            mountPath: "/usr/share/metricbeat/metricbeat.yml"            
+            subPath: metricbeat.yml    
+            #get the conent from  filebeat.yml under configMap(filebeat-config)
+            #create a file of filebeat.yml and write it into '/usr/share/filebeat/filebeat.yml' 
+          #command: [ "chmod", "-R", "777","/cslogs/dockerweb/" ]
+
