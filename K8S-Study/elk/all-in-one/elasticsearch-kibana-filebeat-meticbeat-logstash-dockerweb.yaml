@@ -98,7 +98,7 @@ data:
     output {
         elasticsearch {
             hosts => ["http://172.17.0.2:31200"]
-            index =>  "%{APP_NAME}-%{+YYYY.MM.dd}"
+            index =>  "logstash-%{+YYYY.MM.dd}"
         }
     }  
   log4j2.properties: |-
@@ -368,7 +368,7 @@ spec:
             mountPath: "/usr/share/logstash/config/logstash.yml"            
             subPath: logstash.yml  
           - name: logstash-config
-            mountPath: "/usr/share/logstash/config/pipeline/logstash.conf"            
+            mountPath: "/usr/share/logstash/pipeline/logstash.conf"            
             subPath: logstash.conf  
           - name: logstash-config
             mountPath: "/usr/share/logstash/config/log4j2.properties"            
