@@ -495,7 +495,7 @@ spec:
   ports:
     - name: http
       port: 8080
-      nodePort: 31808
+      nodePort: 31809
   type: NodePort                     
 
 
