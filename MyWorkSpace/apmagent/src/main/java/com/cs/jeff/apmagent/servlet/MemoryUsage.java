@@ -2,20 +2,16 @@ package com.cs.jeff.apmagent.servlet;
 
 import java.io.IOException;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.cs.jeff.apmagent.servlet.service.HelloWorldService;
+import com.cs.jeff.apmagent.servlet.service.MemoryUsageService;
 import com.cs.jeff.apmagent.util.APMAgentUtil;
 
-/**
- * Servlet implementation class HelloWorld
- */
 
-public class HelloWorld extends HttpServlet {
+public class MemoryUsage extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     /**
@@ -29,30 +25,13 @@ public class HelloWorld extends HttpServlet {
      * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
      */
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
-        String nameString = request.getParameter("user.name");
-        String reString = new HelloWorldService().sayHello(nameString);
+        String loops = request.getParameter("memory.loop");
+        int times = 1;
+        try {
+            times = Integer.parseInt(loops);
+        }catch (Exception e) {
+        }
+        String reString = new MemoryUsageService().consumeMemory(times);
         APMAgentUtil.sendResponse(reString,request,response);
     }
-
-    @Override
-    public void init(final ServletConfig config) throws ServletException {
-
-        // TODO Auto-generated method stub
-        super.init(config);
-        initSystemProperty();
-    }
-
-    @Override
-    public void init() throws ServletException {
-
-        // TODO Auto-generated method stub
-        super.init();
-        initSystemProperty();
-    }
-
-    private void initSystemProperty() {
-        APMAgentUtil.setSystemId();
-    }
-
-
 }

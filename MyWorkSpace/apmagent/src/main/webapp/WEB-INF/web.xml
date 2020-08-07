@@ -11,9 +11,38 @@
 		<servlet-class>com.cs.jeff.apmagent.servlet.HelloWorld</servlet-class>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
-	
 	<servlet-mapping>
 		<servlet-name>HelloWorld</servlet-name>
 		<url-pattern>/hello</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>CPUUsage</servlet-name>
+		<servlet-class>com.cs.jeff.apmagent.servlet.CPUUsage</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>CPUUsage</servlet-name>
+		<url-pattern>/cpu</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>MemoryUsage</servlet-name>
+		<servlet-class>com.cs.jeff.apmagent.servlet.MemoryUsage</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>MemoryUsage</servlet-name>
+		<url-pattern>/memory</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>ThreadCount</servlet-name>
+		<servlet-class>com.cs.jeff.apmagent.servlet.ThreadCount</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ThreadCount</servlet-name>
+		<url-pattern>/thread</url-pattern>
 	</servlet-mapping>
 </web-app>

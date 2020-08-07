@@ -2,20 +2,16 @@ package com.cs.jeff.apmagent.servlet;
 
 import java.io.IOException;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.cs.jeff.apmagent.servlet.service.HelloWorldService;
+import com.cs.jeff.apmagent.servlet.service.ThreadCountService;
 import com.cs.jeff.apmagent.util.APMAgentUtil;
 
-/**
- * Servlet implementation class HelloWorld
- */
 
-public class HelloWorld extends HttpServlet {
+public class ThreadCount extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     /**
@@ -29,30 +25,16 @@ public class HelloWorld extends HttpServlet {
      * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
      */
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
-        String nameString = request.getParameter("user.name");
-        String reString = new HelloWorldService().sayHello(nameString);
+        String numberString = request.getParameter("thread.number");
+        String poolString = request.getParameter("thread.pool");
+        int threadNumber = 200;
+        int threadPool = 200;
+        try {
+            threadNumber = Integer.parseInt(numberString);
+            threadPool  = Integer.parseInt(poolString);
+        }catch (Exception e) {
+        }
+        String reString = new ThreadCountService().consumeThread(threadNumber,threadPool);
         APMAgentUtil.sendResponse(reString,request,response);
     }
-
-    @Override
-    public void init(final ServletConfig config) throws ServletException {
-
-        // TODO Auto-generated method stub
-        super.init(config);
-        initSystemProperty();
-    }
-
-    @Override
-    public void init() throws ServletException {
-
-        // TODO Auto-generated method stub
-        super.init();
-        initSystemProperty();
-    }
-
-    private void initSystemProperty() {
-        APMAgentUtil.setSystemId();
-    }
-
-
 }
