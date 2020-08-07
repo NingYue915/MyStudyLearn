@@ -1,1 +1,4 @@
-sudo docker build -t jeffwang/tomcat-apmagent:1.0 .
+docker image rm -f jeffwang/tomcat-apmagent:1.1
+rm apmagent.war || true
+cp ../target/apmagent-1.0.0.war apmagent.war
+docker build -t jeffwang/tomcat-apmagent:1.1 .
