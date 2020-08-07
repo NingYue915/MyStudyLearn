@@ -476,8 +476,8 @@ spec:
          configMap:
           name:  apmagent-config     
       containers:
-        - image: "jeffwang/tomcat-apmagent:1.0"
-          name: jeff-apmserver
+        - image: "jeffwang/tomcat-apmagent:1.2" 
+          name: jeff-apmagent
           ports:
             - containerPort: 8080           
           volumeMounts:
