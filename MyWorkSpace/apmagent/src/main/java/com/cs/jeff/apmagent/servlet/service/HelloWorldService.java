@@ -7,7 +7,6 @@ public class HelloWorldService {
             return "Hello World!";
         }
         return "Hello "+name;
-        
     }
 
 }
