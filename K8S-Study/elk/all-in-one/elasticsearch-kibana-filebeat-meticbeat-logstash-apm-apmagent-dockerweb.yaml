@@ -1,0 +1,501 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kibana-config
+data:
+  #this is kibana.yml configration details.
+  kibana.yml: |- 
+    server.name: kibana
+    server.host: "0"
+    elasticsearch.hosts: [ "http://172.17.0.2:31200" ]
+    monitoring.ui.container.elasticsearch.enabled: true   
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeat-config
+data:
+  #this is filebeat.yml configration details.
+  filebeat.yml: |-
+    filebeat.inputs:
+      - type: log
+        enabled: true
+        paths:
+          - "/cslogs/*.log"
+    #processors:
+      #- add_cloud_metadata: ~
+      #- add_docker_metadata: ~
+      #- add_kubernetes_metadata: ~
+    filebeat.config.modules:
+      path: ${path.config}/modules.d/*.yml
+      reload.enabled: true
+      reload.period: 5s
+    setup.template.settings:
+      index.number_of_shards: 1
+      index.codec: best_compression      
+    #output.elasticsearch:
+     #index: "eLoan-Service-%{[agent.version]}-%{+yyyy.MM.dd}"
+     # hosts: ["http://172.17.0.2:31200"]
+    output.logstash:
+      # The Logstash hosts
+      hosts: ["172.17.0.2:31544"]      
+    setup.kibana:
+      host: "http://172.17.0.2:31601"
+    logging.level: debug
+    logging.to_files: true
+    logging.files:
+      path: /usr/share/filebeat/logs
+      name: filebeat.log
+      keepfiles: 7
+      permissions: 0644
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: metricbeat-config
+data:
+  metricbeat.yml: |-
+    metricbeat.config.modules:
+      # Mounted `metricbeat-daemonset-modules` configmap:
+      path: ${path.config}/modules.d/*.yml
+      # Reload module configs as they change:
+      reload.enabled: false
+
+    # To enable hints based autodiscover uncomment this:
+    #metricbeat.autodiscover:
+    #  providers:
+    #    - type: kubernetes
+    #      node: ${NODE_NAME}
+    #      hints.enabled: true
+
+    processors:
+      - add_cloud_metadata:
+
+    output.elasticsearch:
+      hosts: ["http://172.17.0.2:31200"]
+    setup.kibana:
+      host: "http://172.17.0.2:31601"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-config
+data:
+  logstash.yml: |-
+    http.host: "0.0.0.0"
+    xpack.monitoring.elasticsearch.hosts: ["http://172.17.0.2:31200"]
+  logstash.conf: |-
+    input {
+      beats {
+        port => 5044
+        client_inactivity_timeout => 36000
+        ssl  => false
+        codec => plain
+      }
+    }
+
+    output {
+        elasticsearch {
+            hosts => ["http://172.17.0.2:31200"]
+            index =>  "logstash-%{+YYYY.MM.dd}"
+        }
+    }  
+  log4j2.properties: |-
+    status = trace
+    name = LogstashPropertiesConfig
+
+    property.filename = /usr/share/logstash/logs
+    
+    appender.rolling.type = RollingFile
+    appender.rolling.name = RollingFile
+    appender.rolling.fileName = ${filename}/logstash.log
+    appender.rolling.filePattern = ${filename}/logstash-%d{yyyy-MM-dd}-%i.log.gz
+    appender.rolling.layout.type = PatternLayout
+    appender.rolling.layout.pattern = %d %p %C{.} [%t] %m%n
+    appender.rolling.policies.type = Policies
+    appender.rolling.policies.time.type = TimeBasedTriggeringPolicy
+    appender.rolling.policies.time.interval =
+    appender.rolling.policies.time.modulate = true
+    appender.rolling.policies.size.type = SizeBasedTriggeringPolicy
+    appender.rolling.policies.size.size=50MB
+    appender.rolling.strategy.type = DefaultRolloverStrategy
+    appender.rolling.strategy.max = 
+
+    appender.json_console.type = Console
+    appender.json_console.name = json_console
+    appender.json_console.layout.type = JSONLayout
+    appender.json_console.layout.compact = true
+    appender.json_console.layout.eventEol = true
+
+    rootLogger.level = trace
+    rootLogger.appenderRef.rolling.ref = RollingFile
+    rootLogger.appenderRef.console.ref = ${sys:ls.log.format}_console
+
+ 
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apmserver-config
+data:
+  apm-server.yml: |-
+    apm-server:
+      host: "0.0.0.0:8200"
+    output.elasticsearch:
+      hosts: ["http://172.17.0.2:31200"]   
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apmagent-config
+data:
+  setenv.sh: |-
+    export CATALINA_OPTS="$CATALINA_OPTS -javaagent:/usr/local/tomcat/lib/elastic-apm-agent-1.18.0.RC1.jar"
+    export CATALINA_OPTS="$CATALINA_OPTS -Delastic.apm.service_name=my-apmagent-service"
+    export CATALINA_OPTS="$CATALINA_OPTS -Delastic.apm.application_packages=com.cs.jeff.apmagent"
+    export CATALINA_OPTS="$CATALINA_OPTS -Delastic.apm.server_urls=http://172.17.0.2:31200" 
+---
+# this is elasticserarch deployment,
+# expose two port.9200(http),9300(tcp)
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: jeff-elasticsearch
+spec:
+  selector:
+    matchLabels:
+      app: jeff-elasticsearch
+  replicas: 1 
+  template:
+    metadata:
+      labels:
+        app: jeff-elasticsearch
+    spec:
+      containers:
+        - name: jeff-elasticsearch
+          image: elasticsearch:7.8.1
+          ports:
+            - containerPort: 9300
+            - containerPort: 9200
+          env:
+            - name: discovery.type
+              value: single-node
+              # signle node ,not cluster.
+---
+# this is elasticserarch service,
+# expose two port.9200(http)->31200,9300(tcp)->31300
+apiVersion: v1
+kind: Service
+metadata:
+  name: jeff-elasticsearch
+spec:
+  selector:
+    app: jeff-elasticsearch
+  ports:
+    - name: http
+      port: 9200
+      nodePort: 31200
+    - name: tcp
+      port: 9300
+      nodePort: 31300      
+  type: NodePort            
+---
+# this is kibana deployment,
+# expose two port.5601(http)
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: jeff-kibana
+spec:
+  selector:
+    matchLabels:
+      app: jeff-kibana
+  replicas: 1 
+  template:
+    metadata:
+      labels:
+        app: jeff-kibana
+    spec:
+      containers:
+        - name: jeff-kibana
+          image: kibana:7.8.1
+          ports:
+            - containerPort: 5601
+          volumeMounts:
+            - name:  kibana-config
+              mountPath:  /usr/share/kibana/config/kibana.yml
+              subPath: kibana.yml
+              # will use kibana.yml(from configMap) to replace the one in mountPath
+      volumes:
+        - name:  kibana-config
+          configMap:
+            name: kibana-config
+            # use kibna.yml(line 8) content to create file of kibana.yml
+            # put it in mountPath(/usr/share/kibana/config/kibana.yml)
+---
+# this is kibana service,
+# expose two port.5601(http)->31601
+apiVersion: v1
+kind: Service
+metadata:
+  name: jeff-kibana
+spec:
+  selector:
+    app: jeff-kibana
+  ports:
+    - name: http
+      port: 5601
+      nodePort: 31601
+  type: NodePort       
+
+---
+# this is dockerweb deployment
+# expose two port.8080(http)->31808
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: jeff-dockerweb-filebeat
+spec:
+  selector:
+    matchLabels:
+      app: jeff-dockerweb-filebeat
+  replicas: 1 
+  template:
+    metadata:
+      labels:
+        app: jeff-dockerweb-filebeat
+    spec:
+      hostNetwork: false
+      volumes:
+        - name: app-logs
+          emptyDir: {}
+           
+          #create a empty dir in host(minikube server)for this pod.
+        - name:  filebeat-config
+          configMap:
+            name:  filebeat-config        
+      containers:
+        - image: "docker.elastic.co/beats/filebeat:7.8.1"
+          name: jeff-filebeat
+          volumeMounts:
+          - name: "app-logs"
+            mountPath: /cslogs
+            #mount app-logs into /tmp/cslog-dockerweb/
+            #the app-logs is come from host(emptyDir: {})
+            #the filebeat will monitor this folder in filebeat container.            
+          - name: filebeat-config
+            mountPath: "/usr/share/filebeat/filebeat.yml"            
+            subPath: filebeat.yml       
+            #get the conent from  filebeat.yml under configMap(filebeat-config)
+            #create a file of filebeat.yml and write it into '/usr/share/filebeat/filebeat.yml' 
+          #command: [ "chmod", "-R", "777","/cslogs/dockerweb/" ]
+        - name: jeff-dockerweb
+          image: jeffwang/tomcat-dockerweb:1.0
+          ports:
+            - containerPort: 8080    
+          volumeMounts:
+            - name : "app-logs"
+              mountPath: /cslogs
+            - name : "app-logs"
+              mountPath: /usr/share/filebeat/logs/cslogs/dockerweb                          
+              #mount app log folder out ,name is "app-logs"
+              #create a link between "app-logs" and /tmp/cslogs/dockerweb/
+              #the dockerweb app will write the logs into this folder.
+              #this folder is mount from host(emptyDir{})
+              #THIS IS VERY IMPORTANT TO SET PERMISSION ON THIS LOG FOLDER
+              #OTHER WISE FILEBEAT WILL NOT ABLE TO READ THE LOG FILE.
+          env:
+            - name:  LOG_PATH
+              value: /cslogs
+            - name: UMASK
+              value: "0000"
+          #command: [ "chmod", "-R", "777","/cslogs/dockerweb/" ]
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jeff-dockerweb-webapp
+spec:
+  selector:
+    app: jeff-dockerweb-filebeat
+  ports:
+    - name: http
+      port: 8080
+      nodePort: 31808
+  type: NodePort
+---
+            
+---
+# this is metricbeat deployment
+# expose two port.8080(http)->31808
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: jeff-metricbeat
+spec:
+  selector:
+    matchLabels:
+      app: jeff-metricbeat
+  replicas: 1 
+  template:
+    metadata:
+      labels:
+        app: jeff-metricbeat
+    spec:
+      hostNetwork: false
+      volumes:
+        - name:  metricbeat-config
+          configMap:
+            name:  metricbeat-config        
+      containers:
+        - image: "store/elastic/metricbeat:7.8.1"
+          name: jeff-metricbeat
+          volumeMounts:
+          - name: metricbeat-config
+            mountPath: "/usr/share/metricbeat/metricbeat.yml"            
+            subPath: metricbeat.yml    
+            #get the conent from  filebeat.yml under configMap(filebeat-config)
+            #create a file of filebeat.yml and write it into '/usr/share/filebeat/filebeat.yml' 
+          #command: [ "chmod", "-R", "777","/cslogs/dockerweb/" ]
+---
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: jeff-logstash
+spec:
+  selector:
+    matchLabels:
+      app: jeff-logstash
+  replicas: 1 
+  template:
+    metadata:
+      labels:
+        app: jeff-logstash
+    spec:
+      hostNetwork: false
+      volumes:
+       - name:  logstash-config
+         configMap:
+          name:  logstash-config      
+      containers:
+        - image: "logstash:7.8.1"
+          name: jeff-logstash
+          ports:
+            - containerPort: 5044
+            - containerPort: 9600             
+          volumeMounts:
+          - name: logstash-config
+            mountPath: "/usr/share/logstash/config/logstash.yml"            
+            subPath: logstash.yml  
+          - name: logstash-config
+            mountPath: "/usr/share/logstash/pipeline/logstash.conf"            
+            subPath: logstash.conf  
+          - name: logstash-config
+            mountPath: "/usr/share/logstash/config/log4j2.properties"            
+            subPath: log4j2.properties
+            
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jeff-logstash
+spec:
+  selector:
+    app: jeff-logstash
+  ports:
+    - name: tcp
+      port: 5044
+      nodePort: 31544
+    - name: http
+      port: 9600
+      nodePort: 31960      
+  type: NodePort          
+          
+---
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: jeff-apmserver
+spec:
+  selector:
+    matchLabels:
+      app: jeff-apmserver
+  replicas: 1 
+  template:
+    metadata:
+      labels:
+        app: jeff-apmserver
+    spec:
+      hostNetwork: false
+      volumes:
+       - name:  apmserver-config
+         configMap:
+          name:  apmserver-config     
+      containers:
+        - image: "docker.elastic.co/apm/apm-server:7.8.1"
+          name: jeff-apmserver
+          ports:
+            - containerPort: 8200           
+          volumeMounts:
+          - name: apmserver-config
+            mountPath: "/usr/share/apm-server/apm-server.yml"            
+            subPath: apm-server.yml
+---            
+apiVersion: v1
+kind: Service
+metadata:
+  name: jeff-apmserver
+spec:
+  selector:
+    app: jeff-apmserver
+  ports:
+    - name: tcp
+      port: 8200
+      nodePort: 31820
+  type: NodePort                     
+---
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: jeff-apmagent
+spec:
+  selector:
+    matchLabels:
+      app: jeff-apmagent
+  replicas: 1 
+  template:
+    metadata:
+      labels:
+        app: jeff-apmagent
+    spec:
+      hostNetwork: false
+      volumes:
+       - name:  apmagent-config
+         configMap:
+          name:  apmagent-config     
+      containers:
+        - image: "jeffwang/tomcat-apmagent:1.0"
+          name: jeff-apmserver
+          ports:
+            - containerPort: 8080           
+          volumeMounts:
+          - name: apmagent-config 
+            mountPath: "/usr/local/tomcat/bin/setenv.sh"            
+            subPath: setenv.sh
+---            
+apiVersion: v1
+kind: Service
+metadata:
+  name: jeff-apmagent
+spec:
+  selector:
+    app: jeff-apmagent
+  ports:
+    - name: http
+      port: 8080
+      nodePort: 31808
+  type: NodePort                     
+
+
