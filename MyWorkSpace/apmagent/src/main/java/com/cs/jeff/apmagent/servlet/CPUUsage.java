@@ -26,12 +26,18 @@ public class CPUUsage extends HttpServlet {
      */
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
         String loops = request.getParameter("cpu.loop");
+        String logLoops= request.getParameter("log.loop");
         int loop = 100000000;
+        int logLoop = 1000;
         try {
             loop = Integer.parseInt(loops);
         }catch (Exception e) {
         }
-        String reString = new CPUUsageService().consumeCpu(loop);
+        try {
+            logLoop = Integer.parseInt(logLoops);
+        }catch (Exception e) {
+        }
+        String reString = new CPUUsageService().consumeCpu(loop,logLoop);
         APMAgentUtil.sendResponse(reString,request,response);
     }
 }
