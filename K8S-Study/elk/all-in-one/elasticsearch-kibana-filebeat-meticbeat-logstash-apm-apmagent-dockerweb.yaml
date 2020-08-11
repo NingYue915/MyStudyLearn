@@ -42,7 +42,7 @@ data:
       hosts: ["172.17.0.2:31544"]      
     setup.kibana:
       host: "http://172.17.0.2:31601"
-    logging.level: debug
+    logging.level: error
     logging.to_files: true
     logging.files:
       path: /usr/share/filebeat/logs
