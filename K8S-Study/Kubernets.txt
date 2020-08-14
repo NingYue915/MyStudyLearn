@@ -87,4 +87,6 @@ error: a container name must be specified for pod cs-awsweb-service-c4b68845b-q4
 
 ## you can use ak exec -it pod -c continer id to exec this continer;
 like below ;
-ak exec -it cs-awsweb-service-c4b68845b-q4cp5 -c filebeat bash -n awsweb
+ak exec -it cs-awsweb-service-68b9d9867b-5ndnv  -c filebeat bash -n awsweb
+ak exec -it cs-awsweb-service-68b9d9867b-5ndnv  -c cs-awsweb-service bash -n awsweb
+cs-awsweb-service-c4b68845b-nsqzh
