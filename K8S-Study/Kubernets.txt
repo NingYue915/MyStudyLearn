@@ -62,4 +62,29 @@
 	kubectl delete -f dockerweb-deployment.yaml 
 	
 
+## use ak(kubectl) to get all with the namespace of awsweb
+jeff@Ubuntu20:/home$ ak get all -n awsweb
+NAME                                    READY   STATUS    RESTARTS   AGE
+pod/cs-awsweb-service-c4b68845b-q4cp5   2/2     Running   0          4h49m
 
+NAME                        TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
+service/cs-awsweb-service   ClusterIP   10.100.106.225   <none>        8080/TCP   4h49m
+
+NAME                                READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/cs-awsweb-service   1/1     1            1           4h49m
+
+NAME                                          DESIRED   CURRENT   READY   AGE
+replicaset.apps/cs-awsweb-service-c4b68845b   1         1         1       4h49m
+jeff@Ubuntu20:/home$
+
+##in the pod of "pod/cs-awsweb-service-c4b68845b-q4cp5 " ,you wil find two continer in it .
+##[cs-awsweb-service filebeat]
+
+jeff@Ubuntu20:/home$ ak logs cs-awsweb-service-c4b68845b-q4cp5
+Error from server (Forbidden): pods "cs-awsweb-service-c4b68845b-q4cp5" is forbidden: User "system:serviceaccount:kube-system:cicd-deployer" cannot get resource "pods" in API group "" in the namespace "default"
+jeff@Ubuntu20:/home$ ak logs cs-awsweb-service-c4b68845b-q4cp5 -n awsweb
+error: a container name must be specified for pod cs-awsweb-service-c4b68845b-q4cp5, choose one of: [cs-awsweb-service filebeat]
+
+## you can use ak exec -it pod -c continer id to exec this continer;
+like below ;
+ak exec -it cs-awsweb-service-c4b68845b-q4cp5 -c filebeat bash -n awsweb
